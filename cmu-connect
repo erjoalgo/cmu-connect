@@ -1,0 +1,55 @@
+#!/bin/bash
+
+WLAN=${1:-$(sudo ifconfig -a | grep -Eo '^wlan[0-9]+' | head -1)}
+SELF=$(readlink -f $0)
+SELFD=$(dirname ${SELF})
+CMUWPA=${SELFD}/cmuwpa
+CMUWPAGEN=${SELFD}/cmuwpa-gen.sh
+CMUCERT=${SELFD}/cmu_comodo_cert.pem
+
+cd ${SELFD}
+function kill_wpas {
+    sudo killall wpa_supplicant avahi dhclient
+}
+    
+
+if command -v airmon-ng; then
+    sudo airmon-ng check ${WLAN} | grep -E 'Found [0-9]+ processes that could cause trouble.' && kill_wpas
+    [ -z "$(sudo airmon-ng check ${WLAN})" ] || exit ${LINENO}
+else
+    echo "airmon-ng not installed. killing unconditionally and assuming it worked"
+    kill_wpas
+fi
+
+
+if ! command -v wpa_supplicant || ! command -v iwconfig; then
+    echo "wpa_supplicant or iwconfig not available"
+    exit ${LINENO}
+fi
+
+[ -e ${CMUCERT} ] || { echo "cmu cert file not found"; exit ${LINENO}; }
+
+if ! test -s ${CMUWPA} ; then
+    echo "${CMUWPA} not found or empty, generating..."
+    ${CMUWPAGEN}>${CMUWPA}
+fi
+
+# sudo wpa_supplicant -B -i ${WLAN} -Dnl80211,wext -c ${CMUWPA}
+# sudo wpa_supplicant -i ${WLAN} -c ${CMUWPA} -D nl80211,wext &
+
+
+# cat <<EOF | expect -df - 
+cat <<EOF | expect -f - 
+
+set timeout -1
+eval spawn sudo wpa_supplicant -i ${WLAN} -c ${CMUWPA} -D nl80211,wext &
+# expect "Established DTLS connection"
+# expect -re "CTRL-EVENT-CONNECTED - Connection to 00:1a:1e:87:3c:01 completed"
+# expect -re "CTRL-EVENT-CONNECTED - Connection to [0-9a-z:]+ completed"
+expect -re "CTRL-EVENT-CONNECTED - Connection to .* completed"
+disconnect
+exit
+
+EOF
+
+sudo dhclient -v ${WLAN} 
