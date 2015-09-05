@@ -1,0 +1,1 @@
+connect to the cmu-secture network using andrew id and passwd
