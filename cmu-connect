@@ -9,7 +9,9 @@ CMUCERT=${SELFD}/cmu_comodo_cert.pem
 
 cd ${SELFD}
 function kill_wpas {
-    sudo killall wpa_supplicant avahi dhclient
+    # sudo killall wpa_supplicant avahi dhclient
+    sudo killall wpa_supplicant
+    ps -eo pid,args | grep dhclient | grep "${WLAN}"  | grep '^[[:space:]][0-9]+' -Po | xargs kill
 }
     
 
@@ -17,7 +19,6 @@ if command -v airmon-ng; then
     sudo airmon-ng check ${WLAN} | grep -E 'Found [0-9]+ processes that could cause trouble.' && kill_wpas
     [ -z "$(sudo airmon-ng check ${WLAN})" ] || exit ${LINENO}
 else
-    echo "airmon-ng not installed. killing unconditionally and assuming it worked"
     kill_wpas
 fi
 
@@ -38,8 +39,7 @@ fi
 # sudo wpa_supplicant -i ${WLAN} -c ${CMUWPA} -D nl80211,wext &
 
 
-# cat <<EOF | expect -df - 
-cat <<EOF | expect -f - 
+cat <<EOF | expect -df - 
 
 set timeout -1
 eval spawn sudo wpa_supplicant -i ${WLAN} -c ${CMUWPA} -D nl80211,wext &
@@ -51,5 +51,5 @@ disconnect
 exit
 
 EOF
-
+echo "post CTRL-EVENT-CONNECTED expect"
 sudo dhclient -v ${WLAN} 
