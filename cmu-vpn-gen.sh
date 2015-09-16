@@ -5,6 +5,8 @@ read -p "andrew id: " ANDREWID 1>&2
 stty -echo
 read -p "pass: " PASS 1>&2 ; echo 
 stty echo
+
+PASS=$(echo "${PASS}" | sed 's/[][{}$\]/\\\0/g')
 EXE="cmu-vpn.sh"
 touch "${EXE}"
 chmod +x "${EXE}"
