@@ -4,7 +4,7 @@ WLAN=${1:-$(sudo ifconfig -a | grep -Eo '^wlan[0-9]+' | head -1)}
 SELF=$(readlink -f $0)
 SELFD=$(dirname ${SELF})
 CMUWPA=${SELFD}/cmuwpa
-CMUWPAGEN=${SELFD}/cmuwpa-gen.sh
+CMUWPAGEN=${SELFD}/gen-cmu-wpa.sh
 CMUCERT=${SELFD}/cmu_comodo_cert.pem
 
 cd ${SELFD}
