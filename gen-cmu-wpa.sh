@@ -4,7 +4,7 @@ stty -echo
 read -p "pass: " PASS 1>&2 ; echo 
 stty echo
 
-cat<<EOF
+cat<<EOF > cmuwpa
 network={
 	ssid="CMU-SECURE"
 	scan_ssid=1
