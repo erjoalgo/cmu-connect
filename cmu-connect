@@ -32,7 +32,7 @@ fi
 
 if ! test -s ${CMUWPA} ; then
     echo "${CMUWPA} not found or empty, generating..."
-    ${CMUWPAGEN}
+    ${CMUWPAGEN} > ${CMUWPA}
 fi
 
 # sudo wpa_supplicant -B -i ${WLAN} -Dnl80211,wext -c ${CMUWPA}
